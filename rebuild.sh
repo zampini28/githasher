@@ -2,7 +2,9 @@
 
 set -ex
 
-rm -rf build
+rm -rf build logs
+
+mkdir logs
 
 cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=$(find . -name "vcpkg.cmake")
 

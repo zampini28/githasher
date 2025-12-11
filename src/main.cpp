@@ -1,11 +1,19 @@
 #include <drogon/drogon.h>
 #include <print>
+#include <clocale>
 
 #include "api/HashController.hpp"
 
 using namespace drogon;
 
 int main() {
+    if (std::setlocale(LC_ALL, "en_US.UTF-8") == nullptr) {
+        std::println("WARNING: Failed to set locale to en_US.UTF-8. Trying system default...");
+        std::setlocale(LC_ALL, "");
+    }
+    
+    std::println("Current Locale: {}", std::setlocale(LC_ALL, nullptr));
+
     const std::string ip = "0.0.0.0";
     const uint16_t port = 8080;
     const std::string static_files_root = "./static"; 
@@ -37,7 +45,7 @@ int main() {
         app().run();
     } catch (const std::exception& e) {
         std::println(std::cerr, "FATAL ERROR: {}", e.what());
-        return 1;
+        return EXIT_FAILURE;
     }
 
     return 0;

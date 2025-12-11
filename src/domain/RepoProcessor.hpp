@@ -3,10 +3,12 @@
 #include <string>
 #include <vector>
 #include <expected>
-#include <regex>
+#include <unordered_set>
 #include <ranges>
+#include <algorithm>
 #include <openssl/sha.h>
 #include <sstream>
+#include <format>
 
 namespace gh::domain {
 
@@ -21,30 +23,22 @@ namespace gh::domain {
         size_t files_processed;
     };
 
-    template<typename T>
-    concept StringMatcher = requires(T a, std::string s) {
-        { a.matches(s) } -> std::convertible_to<bool>;
-    };
-
     class RepoProcessor {
     public:
         static std::expected<ProcessResult, std::string> process_repository(
-            const std::vector<FileEntry>& files,
-            const std::string& include_regex,
-            const std::string& exclude_regex
+            const std::vector<FileEntry>& downloaded_files,
+            const std::vector<std::string>& allowed_paths_vec
         ) {
+            std::unordered_set<std::string> allowed_paths(allowed_paths_vec.begin(), allowed_paths_vec.end());
+            
             std::stringstream full_concat;
-            SHA512_CTX sha256;
-            SHA512_Init(&sha256);
+            SHA512_CTX sha512;
+            SHA512_Init(&sha512);
 
-            std::regex inc_re(include_regex.empty() ? ".*" : include_regex);
-            std::regex exc_re(exclude_regex.empty() ? "$^" : exclude_regex);
-
-            auto filtered_view = files | std::views::filter([&](const FileEntry& f) {
-                return std::regex_search(f.path, inc_re) && !std::regex_search(f.path, exc_re);
+            auto filtered_view = downloaded_files | std::views::filter([&](const FileEntry& f) {
+                return allowed_paths.contains(f.path);
             });
 
-            size_t count = 0;
             std::vector<const FileEntry*> sorted_files;
             for (const auto& f : filtered_view) sorted_files.push_back(&f);
             
@@ -52,18 +46,19 @@ namespace gh::domain {
                 return a->path < b->path;
             });
 
+            size_t count = 0;
             for (const auto* file : sorted_files) {
                 std::string header = std::format("--- FILE: {} ({}) ---\n", file->path, file->content.size());
                 
                 full_concat << header << file->content << "\n";
 
-                SHA512_Update(&sha256, header.c_str(), header.size());
-                SHA512_Update(&sha256, file->content.c_str(), file->content.size());
+                SHA512_Update(&sha512, header.c_str(), header.size());
+                SHA512_Update(&sha512, file->content.c_str(), file->content.size());
                 count++;
             }
 
             unsigned char hash[SHA512_DIGEST_LENGTH];
-            SHA512_Final(hash, &sha256);
+            SHA512_Final(hash, &sha512);
 
             std::string hash_string;
             for(int i = 0; i < SHA512_DIGEST_LENGTH; ++i)
