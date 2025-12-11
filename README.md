@@ -5,7 +5,7 @@ A high-performance, asynchronous web server that streams, filters, and hashes Gi
 ## Prerequisites
 
 * **Linux/macOS** (Windows users may need WSL2)
-* **C++ Compiler** supporting C++23/26 (GCC 14+ or Clang 18+)
+* **C++ Compiler** supporting C++26 (GCC 14+ or Clang 18+)
 * **CMake** (3.27 or newer)
 * **Git**, **curl**, **zip**, **unzip**, **tar** (required for vcpkg)
 
@@ -13,7 +13,7 @@ A high-performance, asynchronous web server that streams, filters, and hashes Gi
 
 ### 1. Clone the Repository
 ```bash
-git clone [https://github.com/yourusername/githasher.git](https://github.com/yourusername/githasher.git)
+git clone [https://github.com/zampini28/githasher.git](https://github.com/zampini28/githasher.git)
 cd githasher
 ````
 
@@ -23,7 +23,7 @@ This project uses `vcpkg` for package management. We will bootstrap it and insta
 
 ```bash
 # Download vcpkg
-git clone [https://github.com/microsoft/vcpkg.git](https://github.com/microsoft/vcpkg.git)
+git clone --depth=1 [https://github.com/microsoft/vcpkg.git](https://github.com/microsoft/vcpkg.git)
 ./vcpkg/bootstrap-vcpkg.sh
 
 # Install required libraries (Drogon, OpenSSL, LibArchive, etc.)
