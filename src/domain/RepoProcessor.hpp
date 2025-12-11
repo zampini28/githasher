@@ -48,12 +48,14 @@ namespace gh::domain {
 
             size_t count = 0;
             for (const auto* file : sorted_files) {
-                std::string header = std::format("--- FILE: {} ({}) ---\n", file->path, file->content.size());
-                
-                full_concat << header << file->content << "\n";
-
-                SHA512_Update(&sha512, header.c_str(), header.size());
+                full_concat << file->content;
                 SHA512_Update(&sha512, file->content.c_str(), file->content.size());
+
+                if (!file->content.empty() && file->content.back() != '\n') {
+                    full_concat << "\n";
+                    SHA512_Update(&sha512, "\n", 1);
+                }
+
                 count++;
             }
 
