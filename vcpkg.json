@@ -1,0 +1,11 @@
+{
+    "name": "githasher",
+    "version-string": "0.1.0",
+    "dependencies": [
+        "drogon",
+        "nlohmann-json",
+        "libarchive",
+        "openssl",
+        "fmt"
+    ]
+}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GitHasher Pro</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 p-10 font-mono">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        <h1 class="text-3xl font-bold text-emerald-400">GitHasher <span class="text-sm text-gray-500">C++26 Engine</span></h1>
+
+        <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+            <label class="block mb-2">GitHub Repository (Owner/Repo)</label>
+            <div class="flex gap-4">
+                <input type="text" name="owner" placeholder="torvalds" class="bg-gray-700 p-2 rounded w-1/3 text-white" id="owner">
+                <input type="text" name="repo" placeholder="linux" class="bg-gray-700 p-2 rounded w-1/3 text-white" id="repo">
+                <button 
+                    class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded"
+                    hx-get="/api/branches" 
+                    hx-include="#owner, #repo"
+                    hx-target="#branch-select"
+                    hx-trigger="click">
+                    Fetch Branches
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+            <label class="block mb-2">Select Branch</label>
+            <select id="branch-select" name="branch" class="bg-gray-700 p-2 rounded w-full text-white">
+                <option>Select a repo first...</option>
+            </select>
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 grid grid-cols-2 gap-4">
+            <div>
+                <label>Include Regex</label>
+                <input type="text" name="include" value=".*\.cpp$" class="bg-gray-700 p-2 rounded w-full mt-1">
+            </div>
+            <div>
+                <label>Exclude Regex</label>
+                <input type="text" name="exclude" value="tests/.*" class="bg-gray-700 p-2 rounded w-full mt-1">
+            </div>
+        </div>
+
+        <button 
+            class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded text-xl font-bold shadow-lg"
+            hx-post="/api/process"
+            hx-include="[name='owner'], [name='repo'], [name='branch'], [name='include'], [name='exclude']"
+            hx-ext="json-enc"
+            hx-target="#results"
+            hx-indicator="#loading">
+            Generate Hash
+        </button>
+
+        <div id="loading" class="htmx-indicator text-center text-yellow-400">Processing...</div>
+
+        <div id="results" class="space-y-4">
+            </div>
+    </div>
+
+    <script>
+        htmx.defineExtension('json-enc', {
+            onEvent: function (name, evt) {
+                if (name === "htmx:configRequest") {
+                    evt.detail.headers['Content-Type'] = "application/json";
+                }
+            },
+            encodeParameters: function(xhr, parameters, elt) {
+                xhr.overrideMimeType('text/json');
+                return JSON.stringify(parameters);
+            }
+        });
+    </script>
+</body>
+</html>
